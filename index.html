@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="hi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <title>Little Heart Note ❤️</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- floating hearts container -->
+  <div id="hearts" aria-hidden="true"></div>
+
+  <main class="wrap" id="wrap">
+    <header class="topbar">
+      <div class="title">Little Heart Note</div>
+      <div class="top-actions">
+        <button id="presetBtn" class="icon-btn" title="Presets">✨</button>
+        <button id="openSettings" class="icon-btn" aria-label="Open settings">⚙️</button>
+      </div>
+    </header>
+
+    <section class="card" id="card" aria-live="polite">
+      <div class="photo" id="photo">
+        <img id="photoImg" src="https://images.unsplash.com/photo-1506748686214-e9df14d4d9d0?q=80&w=800&auto=format&fit=crop" alt="nishaani image"/>
+        <div class="badge" id="photoBadge">for you ♥</div>
+      </div>
+
+      <div class="content">
+        <h1 id="heading">For you — ek chhota sa note</h1>
+        <p id="line" class="lead">"Thoda sa thank you, thoda sa miss you — bas itna hi."</p>
+
+        <div class="message" id="message">
+          <strong id="fromLabel">— Ramzan</strong>
+          <p id="msgText">Hi jaan, main roz thoda behtar banne ki koshish kar raha hoon. Tumhari hansi mere din ko bright kar deti hai. Agar kabhi baat karna ho, main yahin hoon — bina kisi pressure ke. ❤️</p>
+          <div class="quote">❤</div>
+        </div>
+
+        <div class="controls">
+          <a id="sendBtn" class="btn primary" href="#" onclick="alert('Open chat and paste the link or share the page (host it on GitHub Pages/Netlify).'); return false;"><span class="icon">✉️</span> Send</a>
+          <button id="shareBtn" class="btn" aria-label="Share"><span class="icon">🔗</span> Share</button>
+          <button id="likeBtn" class="btn ghost" aria-label="Like"><span class="icon">💖</span> Like</button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="help">
+      <small>Tip: Tap ⚙️ to customize — upload photo, change colors, or choose a preset message.</small>
+    </footer>
+  </main>
+
+  <!-- SETTINGS PANEL -->
+  <aside id="settings" class="settings" aria-hidden="true">
+    <div class="settings-inner">
+      <div class="settings-head">
+        <h2>Customize</h2>
+        <button id="closeSettings" class="icon-btn" aria-label="Close">✖</button>
+      </div>
+
+      <div class="field">
+        <label>Heading</label>
+        <input id="inputHeading" type="text" maxlength="60" placeholder="For you — ek chhota sa note">
+      </div>
+
+      <div class="field">
+        <label>Short line</label>
+        <input id="inputLine" type="text" maxlength="100" placeholder='"Thoda sa thank you..."'>
+      </div>
+
+      <div class="field">
+        <label>Message (main)</label>
+        <textarea id="inputMsg" rows="4" maxlength="350" placeholder="Type your message here..."></textarea>
+      </div>
+
+      <div class="grid">
+        <div class="field">
+          <label>Author / Signature</label>
+          <input id="inputAuthor" type="text" maxlength="30" placeholder="Ramzan">
+        </div>
+
+        <div class="field">
+          <label>Accent color</label>
+          <input id="inputColor" type="color" value="#ff6b88">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Portrait image (upload)</label>
+        <input id="inputImage" type="file" accept="image/*">
+        <small class="muted">Or paste an external image URL (Unsplash/Drive/Imgur):</small>
+        <input id="inputImageUrl" type="text" placeholder="https://images.unsplash.com/.... or https://drive.google.com/uc?export=view&id=FILE_ID">
+      </div>
+
+      <div class="field">
+        <label>Insert heart emoji</label>
+        <div class="emoji-row" id="emojiRow">
+          <button class="emoji">❤️</button>
+          <button class="emoji">💖</button>
+          <button class="emoji">💕</button>
+          <button class="emoji">😍</button>
+          <button class="emoji">💫</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Presets</label>
+        <div class="preset-row">
+          <button id="presetFriendly" class="preset">Friendly</button>
+          <button id="presetSweet" class="preset">Sweet</button>
+          <button id="presetFlirty" class="preset">Flirty</button>
+        </div>
+      </div>
+
+      <div class="settings-actions">
+        <button id="resetBtn" class="btn">Reset</button>
+        <button id="saveBtn" class="btn primary">Apply</button>
+      </div>
+
+      <div class="small muted">Note: Changes saved locally (this device). To share as a link, host files (GitHub Pages / Netlify).</div>
+    </div>
+  </aside>
+
+<script>
+/* Mobile-customize JS with hearts + presets + love-mode + sticky-zoom-fix */
+const el = id => document.getElementById(id);
+const stateKeys = {
+  heading: 'mn_heading', line: 'mn_line', msg: 'mn_msg',
+  author: 'mn_author', color: 'mn_color', image: 'mn_image'
+};
+
+/* Hearts background generator */
+function spawnHeart(xPct) {
+  const h = document.createElement('div');
+  h.className = 'float-heart';
+  h.style.left = (xPct || (Math.random()*90)) + '%';
+  h.style.animationDelay = (Math.random()*2) + 's';
+  h.innerText = ['💖','❤️','💕','😍'][Math.floor(Math.random()*4)];
+  document.getElementById('hearts').appendChild(h);
+  setTimeout(()=> h.remove(), 7000);
+}
+const HEART_INTERVAL = setInterval(()=> spawnHeart(), 900);
+
+/* Apply state function */
+function applyState(s) {
+  if (s.heading !== null && s.heading !== undefined) el('heading').textContent = s.heading;
+  if (s.line !== null && s.line !== undefined) el('line').textContent = s.line;
+  if (s.msg !== null && s.msg !== undefined) el('msgText').textContent = s.msg;
+  if (s.author !== null && s.author !== undefined) el('fromLabel').textContent = '— ' + s.author;
+  if (s.color) document.documentElement.style.setProperty('--accent', s.color);
+  if (s.image) { el('photoImg').src = s.image; el('photo').classList.remove('empty'); }
+}
+
+/* inputs -> state */
+function readInputsToState() {
+  return {
+    heading: el('inputHeading').value || null,
+    line: el('inputLine').value || null,
+    msg: el('inputMsg').value || null,
+    author: el('inputAuthor').value || null,
+    color: el('inputColor').value || null,
+    image: el('inputImageUrl').value || null
+  };
+}
+
+/* save/load local */
+function saveToLocal(s) {
+  try {
+    localStorage.setItem(stateKeys.heading, s.heading || '');
+    localStorage.setItem(stateKeys.line, s.line || '');
+    localStorage.setItem(stateKeys.msg, s.msg || '');
+    localStorage.setItem(stateKeys.author, s.author || '');
+    localStorage.setItem(stateKeys.color, s.color || '#ff6b88');
+    localStorage.setItem(stateKeys.image, s.image || '');
+  } catch(e) { console.warn('Storage fail', e); }
+}
+function loadFromLocal() {
+  return {
+    heading: localStorage.getItem(stateKeys.heading) || null,
+    line: localStorage.getItem(stateKeys.line) || null,
+    msg: localStorage.getItem(stateKeys.msg) || null,
+    author: localStorage.getItem(stateKeys.author) || null,
+    color: localStorage.getItem(stateKeys.color) || null,
+    image: localStorage.getItem(stateKeys.image) || null
+  };
+}
+
+/* Enable love-mode (editing color-full) */
+function setLoveMode(on) {
+  document.body.classList.toggle('love-mode', !!on);
+}
+
+/* Settings toggle */
+el('openSettings').addEventListener('click', ()=> {
+  setLoveMode(true);                      // <-- LOVE MODE ON
+  el('settings').classList.add('open');
+  el('settings').setAttribute('aria-hidden','false');
+  el('inputHeading').value = el('heading').textContent;
+  el('inputLine').value = el('line').textContent;
+  el('inputMsg').value = el('msgText').textContent;
+  el('inputAuthor').value = el('fromLabel').textContent.replace(/^—\s*/,'');
+  el('inputColor').value = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#ff6b88';
+  el('inputImageUrl').value = '';
+});
+el('closeSettings').addEventListener('click', ()=> {
+  setLoveMode(false);                     // <-- LOVE MODE OFF
+  el('settings').classList.remove('open'); el('settings').setAttribute('aria-hidden','true');
+});
+
+/* Image upload */
+el('inputImage').addEventListener('change', (e)=> {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = (ev) => { el('photoImg').src = ev.target.result; el('photo').classList.remove('empty'); };
+  r.readAsDataURL(f);
+});
+
+/* live accent color while editing */
+el('inputColor').addEventListener('input', (e) => {
+  const v = e.target.value;
+  document.documentElement.style.setProperty('--accent', v);
+  // also update love-mode variables for preview consistency
+  document.documentElement.style.setProperty('--love-accent', v);
+});
+
+/* Apply/save */
+el('saveBtn').addEventListener('click', ()=> {
+  const s = readInputsToState();
+  if (s.image && s.image.trim()) {
+    const url = s.image.trim();
+    if (/^https?:\/\//.test(url)) s.image = url;
+    else { alert('Please paste a valid image URL (http/https)'); return; }
+  } else s.image = localStorage.getItem(stateKeys.image) || el('photoImg').src;
+  applyState(s); saveToLocal(s); el('settings').classList.remove('open');
+  setLoveMode(false);                      // <-- exit love-mode after Apply
+});
+
+/* Preset buttons */
+el('presetBtn').addEventListener('click', ()=> {
+  // quick spawn few hearts for fun
+  spawnHeart(20); spawnHeart(50); spawnHeart(80);
+  alert('Presets open in settings. Try Sweet / Flirty / Friendly.');
+});
+el('presetFriendly').addEventListener('click', ()=> {
+  el('inputMsg').value = "Hey! Bas tumhe bataana tha — main thoda better ho raha hoon. Aasha hai tum achhi ho. 😊";
+});
+el('presetSweet').addEventListener('click', ()=> {
+  el('inputMsg').value = "Tumhari hasi mujhe bohot yaad aati hai. Bas ek chhota sa note — thank you for the memories. ❤️";
+});
+el('presetFlirty').addEventListener('click', ()=> {
+  el('inputMsg').value = "Jaan, tumhari smile dekh ke din bright ho jata hai. Agar tum free ho to ek coffee ho jaye? 😉💕";
+});
+
+/* Emoji insert */
+document.querySelectorAll('.emoji').forEach(btn=>{
+  btn.addEventListener('click', ()=> {
+    el('inputMsg').value += ' ' + btn.textContent;
+  });
+});
+
+/* Like button (tiny animation + heart) */
+el('likeBtn').addEventListener('click', ()=> {
+  spawnHeart(85);
+  el('likeBtn').classList.add('popped');
+  setTimeout(()=> el('likeBtn').classList.remove('popped'), 600);
+});
+
+/* Share button */
+el('shareBtn').addEventListener('click', async ()=> {
+  const heading = el('heading').textContent;
+  const msg = el('msgText').textContent;
+  const author = el('fromLabel').textContent.replace(/^—\s*/,'');
+  const text = `${heading}\n\n${msg}\n— ${author}`;
+  if (navigator.share) {
+    try { await navigator.share({text}); } catch(e){ alert('Share cancelled'); }
+  } else {
+    try { await navigator.clipboard.writeText(text); alert('Text copied to clipboard — paste in chat.'); } catch(e){ alert('Share not supported.'); }
+  }
+});
+
+/* Reset */
+el('resetBtn').addEventListener('click', ()=> {
+  if (!confirm('Reset to default?')) return;
+  localStorage.clear(); location.reload();
+});
+
+/* Restore on load */
+window.addEventListener('load', ()=> {
+  const s = loadFromLocal();
+  if (s.heading) el('heading').textContent = s.heading;
+  if (s.line) el('line').textContent = s.line;
+  if (s.msg) el('msgText').textContent = s.msg;
+  if (s.author) el('fromLabel').textContent = '— ' + s.author;
+  if (s.color) document.documentElement.style.setProperty('--accent', s.color);
+  if (s.image) { el('photoImg').src = s.image; el('photo').classList.remove('empty'); }
+});
+
+/* ESC to close settings */
+window.addEventListener('keydown', (e)=> { if (e.key==='Escape') { setLoveMode(false); el('settings').classList.remove('open'); el('settings').setAttribute('aria-hidden','true'); }});
+
+/* ---------- Sticky-zoom JS fallback (resets transform on touch/scroll/settings) ---------- */
+(function(){
+  const photo = document.getElementById('photo');
+  const img = document.getElementById('photoImg');
+  if (!photo || !img) return;
+
+  const resetTransform = () => {
+    img.style.transition = 'transform 260ms ease';
+    img.style.transform = 'none';
+    setTimeout(()=> img.style.transition = '', 300);
+  };
+
+  photo.addEventListener('touchend', resetTransform, {passive:true});
+  photo.addEventListener('touchcancel', resetTransform, {passive:true});
+  window.addEventListener('scroll', () => {
+    clearTimeout(window._photoResetTimeout);
+    window._photoResetTimeout = setTimeout(resetTransform, 120);
+  }, {passive:true});
+
+  const openBtn = document.getElementById('openSettings');
+  const closeBtn = document.getElementById('closeSettings');
+  if (openBtn) openBtn.addEventListener('click', resetTransform);
+  if (closeBtn) closeBtn.addEventListener('click', resetTransform);
+})();
+</script>
+</body>
+</html>
